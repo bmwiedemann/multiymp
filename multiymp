@@ -1,4 +1,6 @@
 #!/usr/bin/perl -w
+# 2011-2015 by Bernhard M. Wiedemann
+# licensed under AGPL 3.0
 use strict;
 use CGI;
 my @distris=("openSUSE Factory", "openSUSE 13.2", "openSUSE 13.1", "openSUSE 12.3", "openSUSE 12.2", "openSUSE 12.1", "openSUSE 11.4", "openSUSE 11.3", "openSUSE 11.2", "openSUSE 11.1", "SLE 11 SP3", "SLE 12");
@@ -38,11 +40,29 @@ qq(
   </group>)
 }
 
+sub resultxml($)
+{
+	my $groups=shift;
+}
+
+
+
 our $q=CGI->new;
 my $pkgname=$ENV{PATH_INFO};
+my $baserepo=$q->param("base");
+if(!$baserepo && $pkgname=~s{^/([a-zA-Z0-9:._-]+)/}{}) {
+	$baserepo=$1;
+}
 $pkgname=~s/[^a-zA-Z0-9._-]//g; # sanitize
 $pkgname||=$q->param("pkg");
 $pkgname=~s/[^a-zA-Z0-9._-]//g; # sanitize
+if($baserepo && $baserepo!~m{/}) {
+	# assume OBS repo
+	$baserepo=~s{:}{:/}g;
+	$baserepo="http://download.opensuse.org/repositories/$baserepo/";
+}
+$baserepo=~s/[^a-zA-Z0-9._,:\/\$-]//g; # sanitize
+$baserepo=~s{[^/]$}{$&/}; # make sure we have a slash at the end
 
 if($pkgname eq "") {
 	print $q->header("text/html").'<html><body><form action="" method="get">
@@ -54,19 +74,26 @@ if($pkgname eq "") {
 }
 
 print $q->header("text/x-suse-ymp");
-my $baserepo=$q->param("base")||"http://download.opensuse.org/distribution/";
-$baserepo=~s/[^a-zA-Z0-9._,:\/\$-]//g; # sanitize
-$baserepo=~s{[^/]$}{$&/}; # make sure we have a slash at the end
 
 my @groups;
-foreach my $d(@distris) {
-  my $v=$d; $v=~s/ /_/g;
-  my $url=guessurl($baserepo, $v);
+if($baserepo) {
+	foreach my $d(@distris) {
+	  my $v=$d; $v=~s/ /_/g;
+	  my $url=guessurl($baserepo, $v);
 
-# adjust for SLE
-  $d=~s/SLE (\d+)( SP\d+)?/SUSE Linux Enterprise Server $1/;
+	# adjust for SLE
+	  $d=~s/SLE (\d+)( SP\d+)?/SUSE Linux Enterprise Server $1/;
 
-  push @groups, groupblock($pkgname, $url, $d);
+	  push @groups, groupblock($pkgname, $url, $d);
+	}
+} else {
+	push @groups, "  <group>
+    <software>
+      <item>
+        <name>$pkgname</name>
+      </item>
+    </software>
+  </group>";
 }
 my $groups=join("",@groups);
 
