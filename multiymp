@@ -1,0 +1,70 @@
+#!/usr/bin/perl -w
+use strict;
+use CGI;
+my @distris=("openSUSE 13.3", "openSUSE 13.2", "openSUSE 13.1", "openSUSE 12.3", "openSUSE 12.2", "openSUSE 12.1", "openSUSE 11.4", "openSUSE 11.3", "openSUSE 11.2", "openSUSE 11.1", "SLE 11 SP3");
+
+my $factoryregexp="13\.3";
+
+sub guessurl($$)
+{ my($baserepo, $v)=@_;
+	if($baserepo=~m/distribution/) {
+		$v=~s{openSUSE_([0-9.]+)}{$1/repo/oss};
+		if($v=~s{$factoryregexp/}{}) {
+			$baserepo=~s{distribution}{tumbleweed};
+		}
+	} else {
+	   $v=~s/_$factoryregexp/_Factory/; # TODO: Needs updating for every release
+	}
+	return "$baserepo$v/";
+}
+
+our $q=CGI->new;
+my $pkgname=$ENV{PATH_INFO};
+$pkgname=~s/[^a-zA-Z0-9._-]//g; # sanitize
+$pkgname||=$q->param("pkg");
+$pkgname=~s/[^a-zA-Z0-9._-]//g; # sanitize
+
+if($pkgname eq "") {
+	print $q->header("text/html").'<html><body><form action="" method="get">
+	  <input name="base" />base repo url<br/>
+	  <input name="pkg" />pkg<br/>
+	  <input type="submit" value="Submit"/>
+	</form></body></html>';
+	exit 0;
+}
+
+print $q->header("text/x-suse-ymp");
+my $baserepo=$q->param("base")||"http://download.opensuse.org/distribution/";
+$baserepo=~s/[^a-zA-Z0-9._,:\/\$-]//g; # sanitize
+$baserepo=~s{[^/]$}{$&/}; # make sure we have a slash at the end
+
+my @groups;
+foreach my $d(@distris) {
+  my $v=$d; $v=~s/ /_/g;
+  my $url=guessurl($baserepo, $v);
+
+# adjust for SLE
+  $d=~s/SLE (\d+)( SP\d+)?/SUSE Linux Enterprise Server $1/;
+
+  push @groups, qq(
+  <group distversion="$d">
+    <repositories>
+      <repository recommended="true">
+        <name>reponame-$pkgname</name>
+        <url>$url</url>
+      </repository>
+    </repositories>
+    <software>
+      <item>
+        <name>$pkgname</name>
+      </item>
+    </software>
+  </group>)
+}
+my $groups=join("",@groups);
+
+print qq{<?xml version="1.0" encoding="utf-8"?>
+<metapackage xmlns:os="http://opensuse.org/Standards/One_Click_Install" xmlns="http://opensuse.org/Standards/One_Click_Install">
+$groups
+</metapackage>
+};
