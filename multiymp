@@ -48,6 +48,11 @@ sub resultxml($)
 
 
 our $q=CGI->new;
+if($q->param("src")) {
+	open(my $f, "<", $0) or die;
+	print $q->header("text/plain"), <$f>;
+	exit 0;
+}
 my $pkgname=$ENV{PATH_INFO};
 my $baserepo=$q->param("base");
 if(!$baserepo && $pkgname=~s{^/([a-zA-Z0-9:._-]+)/}{}) {
