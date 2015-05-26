@@ -1,21 +1,41 @@
 #!/usr/bin/perl -w
 use strict;
 use CGI;
-my @distris=("openSUSE 13.3", "openSUSE 13.2", "openSUSE 13.1", "openSUSE 12.3", "openSUSE 12.2", "openSUSE 12.1", "openSUSE 11.4", "openSUSE 11.3", "openSUSE 11.2", "openSUSE 11.1", "SLE 11 SP3");
+my @distris=("openSUSE Factory", "openSUSE 13.2", "openSUSE 13.1", "openSUSE 12.3", "openSUSE 12.2", "openSUSE 12.1", "openSUSE 11.4", "openSUSE 11.3", "openSUSE 11.2", "openSUSE 11.1", "SLE 11 SP3", "SLE 12");
 
-my $factoryregexp="13\.3";
+my $factoryregexp="openSUSE_Factory";
 
 sub guessurl($$)
 { my($baserepo, $v)=@_;
 	if($baserepo=~m/distribution/) {
 		$v=~s{openSUSE_([0-9.]+)}{$1/repo/oss};
-		if($v=~s{$factoryregexp/}{}) {
-			$baserepo=~s{distribution}{tumbleweed};
+		if($v=~s{$factoryregexp}{}) {
+			$baserepo=~s{distribution/}{tumbleweed/repo/oss};
 		}
-	} else {
-	   $v=~s/_$factoryregexp/_Factory/; # TODO: Needs updating for every release
 	}
 	return "$baserepo$v/";
+}
+
+sub groupblock($$$)
+{
+	my ($pkgname, $url, $distver)=@_;
+	my $dv=qq( distversion="$distver");
+	$dv="" if $distver eq "openSUSE Factory"; # make Factory the default because versions are updated many times a week
+	my $repo=qq(
+    <repositories>
+      <repository recommended="true">
+        <name>reponame-$pkgname</name>
+        <url>$url</url>
+      </repository>
+    </repositories>);
+qq(
+  <group$dv>$repo
+    <software>
+      <item>
+        <name>$pkgname</name>
+      </item>
+    </software>
+  </group>)
 }
 
 our $q=CGI->new;
@@ -46,20 +66,7 @@ foreach my $d(@distris) {
 # adjust for SLE
   $d=~s/SLE (\d+)( SP\d+)?/SUSE Linux Enterprise Server $1/;
 
-  push @groups, qq(
-  <group distversion="$d">
-    <repositories>
-      <repository recommended="true">
-        <name>reponame-$pkgname</name>
-        <url>$url</url>
-      </repository>
-    </repositories>
-    <software>
-      <item>
-        <name>$pkgname</name>
-      </item>
-    </software>
-  </group>)
+  push @groups, groupblock($pkgname, $url, $d);
 }
 my $groups=join("",@groups);
 
