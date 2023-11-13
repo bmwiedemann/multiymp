@@ -69,7 +69,7 @@ $baserepo||="";
 if($baserepo && $baserepo!~m{/}) {
 	# assume OBS repo
 	$baserepo=~s{:}{:/}g;
-	$baserepo="http://download.opensuse.org/repositories/$baserepo/";
+	$baserepo="https://download.opensuse.org/repositories/$baserepo/";
 }
 $baserepo=~s/[^a-zA-Z0-9._,:\/\$-]//g; # sanitize
 $baserepo=~s{[^/]$}{$&/}; # make sure we have a slash at the end
