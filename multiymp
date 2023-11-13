@@ -31,6 +31,7 @@ sub groupblock($$$)
       <repository recommended="true">
         <name>reponame-$pkgname</name>
         <url>$url</url>
+        <type>rpm-md</type>
       </repository>
     </repositories>);
 qq(
