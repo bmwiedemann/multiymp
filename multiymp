@@ -63,8 +63,9 @@ if(!$baserepo && $pkgname=~s{^/([a-zA-Z0-9:._-]+)/}{}) {
 	$baserepo=$1;
 }
 $pkgname=~s/[^a-zA-Z0-9._-]//g; # sanitize
-$pkgname||=$q->param("pkg");
+$pkgname||=$q->param("pkg")||"";
 $pkgname=~s/[^a-zA-Z0-9._-]//g; # sanitize
+$baserepo||="";
 if($baserepo && $baserepo!~m{/}) {
 	# assume OBS repo
 	$baserepo=~s{:}{:/}g;
