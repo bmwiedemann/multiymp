@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
+# SPDX-License-Identifier: AGPL-3.0-or-later
 # 2011-2015 by Bernhard M. Wiedemann
-# licensed under AGPL 3.0
 use strict;
 use CGI;
 my @distris=("openSUSE Factory", "openSUSE 13.2", "openSUSE 13.1", "openSUSE 12.3", "openSUSE 12.2", "openSUSE 12.1", "openSUSE 11.4", "openSUSE 11.3", "openSUSE 11.2", "openSUSE 11.1", "SLE 11 SP3", "SLE 12");
