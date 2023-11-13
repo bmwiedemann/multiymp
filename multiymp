@@ -23,7 +23,9 @@ sub groupblock($$$)
 {
 	my ($pkgname, $url, $distver)=@_;
 	my $dv=qq( distversion="$distver");
-	$dv="" if $distver eq "openSUSE Factory"; # make Factory the default because versions are updated many times a week
+	$url =~ s/openSUSE_Leap_15.[3-9]/\$releasever/;
+	$url =~ s/15\.[0-9]/\$releasever/;
+	$dv="" if $distver =~ m/openSUSE Factory|Tumbleweed/; # make Factory the default because versions are updated many times a week
 	my $repo=qq(
     <repositories>
       <repository recommended="true">
