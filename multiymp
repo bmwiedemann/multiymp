@@ -74,7 +74,7 @@ $baserepo=~s/[^a-zA-Z0-9._,:\/\$-]//g; # sanitize
 $baserepo=~s{[^/]$}{$&/}; # make sure we have a slash at the end
 
 if($pkgname eq "") {
-	print $q->header("text/html").'<html><body><form action="" method="get">
+	print $q->header("text/html").$q->start_html(-title=>"multiymp").qq{<form action="" method="get">
 	  <input name="base" />base repo url<br/>
 	  <input name="pkg" />pkg<br/>
 	  <input type="submit" value="Submit"/>
