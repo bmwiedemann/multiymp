@@ -78,7 +78,9 @@ if($pkgname eq "") {
 	  <input name="base" />base repo url<br/>
 	  <input name="pkg" />pkg<br/>
 	  <input type="submit" value="Submit"/>
-	</form></body></html>';
+	</form>
+	<br/><a href="?src=1">View CGI source</a>
+	</body></html>\n};
 	exit 0;
 }
 
